@@ -1,0 +1,43 @@
+# Declarative Automation Bundle — AI Observability Control Tower
+# https://docs.databricks.com/aws/en/dev-tools/bundles/
+
+bundle:
+  name: ai-observability-dashboard
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog name for observability data
+    default: msahil
+  schema:
+    description: Unity Catalog schema for observability data
+    default: ai_observability
+  warehouse_id:
+    description: SQL Warehouse ID for the Control Tower app and queries
+    lookup:
+      warehouse: Serverless Starter Warehouse
+
+sync:
+  include:
+    - app.yaml
+    - requirements.txt
+    - backend/**
+    - frontend/dist/**
+    - src/**
+    - setup/**
+  exclude:
+    - frontend/node_modules/**
+    - frontend/src/**
+    - "**/.git/**"
+
+targets:
+  dev:
+    default: true
+    mode: development
+
+  prod:
+    mode: production
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

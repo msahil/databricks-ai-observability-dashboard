@@ -1,0 +1,22 @@
+resources:
+  apps:
+    control_tower:
+      name: ai-obs-control-tower-${bundle.target}
+      description: Unified AI Observability Control Tower — Databricks, New Relic, ServiceNow
+      source_code_path: ..
+      resources:
+        - name: sql-warehouse
+          sql_warehouse:
+            id: ${var.warehouse_id}
+            permission: CAN_USE
+      config:
+        env:
+          - name: DATABRICKS_WAREHOUSE_ID
+            value: ${var.warehouse_id}
+          - name: CATALOG
+            value: ${var.catalog}
+          - name: SCHEMA
+            value: ${var.schema}
+      permissions:
+        - level: CAN_USE
+          group_name: users

@@ -1,0 +1,39 @@
+# Lakeflow Job: drop schema → generate 12 UC tables (serverless compute)
+# https://docs.databricks.com/aws/en/dev-tools/bundles/resource-examples#job-that-uses-serverless-compute
+
+resources:
+  jobs:
+    demo_data:
+      name: "[${bundle.target}] AI Observability Demo Data"
+
+      # Serverless compute — omit job_clusters / new_cluster on notebook tasks
+      performance_target: STANDARD
+
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+
+      tasks:
+        - task_key: drop_schema
+          notebook_task:
+            notebook_path: ../src/notebooks/drop_schema.py
+            base_parameters:
+              catalog: "{{job.parameters.catalog}}"
+              schema: "{{job.parameters.schema}}"
+
+        - task_key: generate_demo_data
+          depends_on:
+            - task_key: drop_schema
+          notebook_task:
+            notebook_path: ../src/notebooks/demo_data.ipynb
+            base_parameters:
+              catalog: "{{job.parameters.catalog}}"
+              schema: "{{job.parameters.schema}}"
+
+      permissions:
+        - level: CAN_VIEW
+          group_name: users
+        - level: CAN_MANAGE_RUN
+          group_name: users

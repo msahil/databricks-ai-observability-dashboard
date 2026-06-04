@@ -15,6 +15,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!frontend/src/lib/
 lib64/
 parts/
 sdist/
@@ -75,7 +76,7 @@ docs/_build/
 .pybuilder/
 target/
 
-# Jupyter Notebook
+# Marimo
 .ipynb_checkpoints
 
 # IPython
