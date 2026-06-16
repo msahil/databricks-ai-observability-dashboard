@@ -1382,7 +1382,51 @@ Route: `/scenarios/c`
 1. Auto-scroll to **Platform visibility matrix** on `/scenarios`
 2. Read **Key integration message** (§0.4 blockquote)
 3. **Closing line**
-4. Optional: `/correlation` for remaining 7 anomalies
+4. **Lakewatch capstone** (§12.1) — extend observability into the security pillar
+5. Optional: `/correlation` for remaining 7 anomalies
+
+### 12.1 Lakewatch capstone — observability + security (narrative only)
+
+> **Status:** Talk track only — no app UI changes. Lakewatch is in **Private Preview** (announced March 2026). Present as direction/vision, not GA.
+> **Refs:** [Lakewatch product](https://www.databricks.com/product/lakewatch) · [launch blog](https://www.databricks.com/blog/databricks-announces-lakewatch-new-agentic-siem)
+
+**What Lakewatch is (and isn't):** an **agentic SIEM** — a *security operations* product. It is **not** an MLflow-style agent observability tool. Keep the two pillars distinct or technical buyers will push back.
+
+**Two-pillar model (one lakehouse):**
+
+| Pillar | Question it answers | In this demo | Databricks product |
+|--------|---------------------|--------------|--------------------|
+| **Observe** | Is my agent healthy — failing, degrading, drifting? | The whole app today | MLflow · AI Gateway · Lakehouse Monitoring |
+| **Secure** | Is my agent compromised, misused, or weaponized? | Implicit (denied tool access, MCP governance) | **Lakewatch** |
+| **Shared foundation** | — | — | Unity Catalog · Genie · MLflow · OCSF · open formats |
+
+**Insert at two moments only** (don't sprinkle throughout):
+
+**A. The seed** — during the Tool Access / denied-access moment mid-demo:
+
+> "Notice this denied tool-access event. Today, that's a *governance* signal in our observability view. But think about what it really is — an agent trying to reach something it shouldn't. At machine scale, that's a **security** signal. Hold that thought."
+
+**B. The capstone** — Act 4, after the platform visibility matrix (extend the closing line, don't replace it):
+
+> "Everything you've seen answers one question: *is my agent healthy?* — failing, degrading, drifting. That's **observability**.
+>
+> There's a second question every CISO is now asking: *is my agent compromised, misused, or being weaponized?* — prompt injection, excessive agency, data exfiltration through a tool call. That's **security**.
+>
+> Here's the key: both run on the **same lakehouse**. Same Unity Catalog governance. Same correlation model you just watched. Same Genie. Databricks calls the security half **Lakewatch** — an agentic SIEM. So the Control Tower isn't just unified observability... it's the foundation for **unified observability *and* security for your AI agents, on one platform.**"
+
+**The transition that makes it credible** — anchor on the existing correlation chain:
+
+> "You watched us correlate MLflow → Gateway → infrastructure → incident. Lakewatch does the *exact same thing* for security — correlating agent activity, identity, tool access, and business data to surface threats. You've already seen the muscle. Lakewatch just points it at a different question."
+
+**Q&A guardrails:**
+
+| If they ask… | Say |
+|--------------|-----|
+| "Is Lakewatch GA?" | "It's in **Private Preview**, announced this March. I'm showing the direction — happy to get you into the preview conversation." |
+| "Is Lakewatch the agent observability tool?" | "No — keep them separate. Observability is MLflow / AI Gateway. Lakewatch is the **security** SIEM. The point is they share one foundation." |
+| "Doesn't this overlap with ServiceNow?" | "ServiceNow stays your ITSM / remediation actor. Lakewatch is the **detection** layer — it can *feed* ServiceNow, same as the AI signals do today." |
+
+**Bridge assets already in the app** (for Phase 2, if the customer bites): `tool_access_logs` denied-access signal, `mcp_catalog` (agent attack surface), and the Correlation timeline. Antimatter acquisition = provably secure authN/authZ **for AI agents** — ties directly to the Tool Access story.
 
 ---
 

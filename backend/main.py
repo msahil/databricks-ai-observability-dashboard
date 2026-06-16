@@ -7,9 +7,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Query
+from databricks.sdk.errors import DatabricksError
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend.config import default_time_range, get_settings, scenario_windows
@@ -24,6 +25,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(DatabricksError)
+@app.exception_handler(RuntimeError)
+@app.exception_handler(ValueError)
+@app.exception_handler(OSError)
+def handle_db_errors(_request: Request, exc: Exception) -> JSONResponse:
+    """Return actionable JSON errors instead of generic 500 responses."""
+    return JSONResponse(status_code=503, content={"detail": str(exc)})
 
 HERO_SCENARIOS: list[dict[str, Any]] = [
     {
@@ -106,13 +116,17 @@ def _iso(dt: datetime) -> str:
 
 
 def _resolve_data_start() -> datetime:
-    raw = execute_scalar(overview.data_start_date(_prefix()))
-    if raw is None:
+    try:
+        raw = execute_scalar(overview.data_start_date(_prefix()))
+        if raw is None:
+            start, _ = default_time_range(30)
+            return start
+        if isinstance(raw, datetime):
+            return raw
+        return datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+    except Exception:
         start, _ = default_time_range(30)
         return start
-    if isinstance(raw, datetime):
-        return raw
-    return datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
 
 
 def _scenario_window(scenario_id: str) -> dict[str, str]:

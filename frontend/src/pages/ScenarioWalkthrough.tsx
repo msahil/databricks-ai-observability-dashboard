@@ -32,9 +32,19 @@ export default function ScenarioWalkthrough() {
   const [stepData, setStepData] = useState<Record<string, unknown>[]>([]);
   const [timeline, setTimeline] = useState<Record<string, unknown>[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [metaError, setMetaError] = useState<string | null>(null);
+  const [metaLoading, setMetaLoading] = useState(true);
 
   useEffect(() => {
-    api.scenario(id).then(setMeta).catch((e) => setError(e.message));
+    setMetaLoading(true);
+    setMetaError(null);
+    api.scenario(id)
+      .then(setMeta)
+      .catch((e) => {
+        setMeta(null);
+        setMetaError(e.message);
+      })
+      .finally(() => setMetaLoading(false));
     api.scenarioTimeline(id).then(setTimeline).catch(() => {});
   }, [id]);
 
@@ -50,8 +60,9 @@ export default function ScenarioWalkthrough() {
   const current = steps.find((s) => s.step === step);
 
   const renderChart = () => {
-    if (!stepData.length) {
-      if (id === 'b' && step === 5) {
+    if (id === 'b' && step === 5) {
+      const alertCount = Number(stepData[0]?.alert_count ?? 0);
+      if (!stepData.length || alertCount === 0) {
         return (
           <div className="rounded-md border border-platform-newrelic bg-emerald-50/50 p-4 text-center">
             <p className="text-base font-semibold text-emerald-800">New Relic shows nothing. All green.</p>
@@ -59,6 +70,9 @@ export default function ScenarioWalkthrough() {
           </div>
         );
       }
+    }
+
+    if (!stepData.length) {
       return <p className="text-base text-db-gray-400">No data for this step in the current window.</p>;
     }
 
@@ -71,6 +85,34 @@ export default function ScenarioWalkthrough() {
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip />
             <Line type="monotone" dataKey="error_rate" stroke="#FF3621" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+      );
+    }
+
+    if (stepData[0]?.day != null && stepData[0]?.avg_input_tokens != null) {
+      return (
+        <ResponsiveContainer width="100%" height={220}>
+          <LineChart data={stepData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+            <XAxis dataKey="day" tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} />
+            <Tooltip />
+            <Line type="monotone" dataKey="avg_input_tokens" stroke="#FF3621" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+      );
+    }
+
+    if (stepData[0]?.day != null && stepData[0]?.avg_feedback != null) {
+      return (
+        <ResponsiveContainer width="100%" height={220}>
+          <LineChart data={stepData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+            <XAxis dataKey="day" tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} />
+            <Tooltip />
+            <Line type="monotone" dataKey="avg_feedback" stroke="#FF3621" strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>
       );
@@ -160,7 +202,19 @@ export default function ScenarioWalkthrough() {
     );
   };
 
-  if (!meta) return <AppShell><LoadingState /></AppShell>;
+  if (metaLoading) return <AppShell><LoadingState /></AppShell>;
+  if (!meta) {
+    return (
+      <AppShell>
+        <ErrorBanner
+          message={
+            metaError ??
+            'Failed to load scenario metadata. Check Databricks auth and warehouse connectivity.'
+          }
+        />
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>

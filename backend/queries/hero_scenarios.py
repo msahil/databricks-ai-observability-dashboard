@@ -66,7 +66,7 @@ GROUP BY DATE(metric_time) ORDER BY day
             5: f"""
 SELECT COUNT(*) AS alert_count
 FROM {prefix}.newrelic_infra_metrics
-WHERE alert_severity IN ('WARNING', 'CRITICAL')
+WHERE region = 'IT' AND alert_severity IS NOT NULL
   AND timestamp BETWEEN :win_start AND :win_end
 """,
             6: f"SELECT * FROM {prefix}.servicenow_incidents WHERE number = 'INC0012002'",

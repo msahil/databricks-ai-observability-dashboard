@@ -1,10 +1,23 @@
 const BASE = '/api';
 
+async function parseErrorMessage(res: Response): Promise<string> {
+  const text = await res.text();
+  if (!text) return res.statusText || `Request failed (${res.status})`;
+  try {
+    const body = JSON.parse(text) as { detail?: string | { msg?: string }[] };
+    if (typeof body.detail === 'string') return body.detail;
+    if (Array.isArray(body.detail) && body.detail[0]?.msg) return body.detail[0].msg;
+  } catch {
+    // not JSON — use raw text if it's not the generic FastAPI 500 page
+    if (text !== 'Internal Server Error') return text;
+  }
+  return res.statusText || `Request failed (${res.status})`;
+}
+
 async function fetchJson<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`);
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || res.statusText);
+    throw new Error(await parseErrorMessage(res));
   }
   return res.json();
 }
