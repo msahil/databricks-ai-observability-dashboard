@@ -16,8 +16,7 @@ variables:
     default: ai_observability
   warehouse_id:
     description: SQL Warehouse ID for the Control Tower app and queries
-    lookup:
-      warehouse: Serverless Starter Warehouse
+    default: 9d8a677b3c55b8a7
 
 sync:
   include:
